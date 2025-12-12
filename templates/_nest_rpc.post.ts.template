@@ -1,0 +1,37 @@
+// Copy this file to: src/server/routes/api/_nest_rpc.post.ts
+import { createError, defineEventHandler, readBody } from "h3";
+import superjson from "superjson";
+import { getNestApp, invokeNestAction } from "analog-nest-rpc";
+import { invokeNestAction as invokeH3 } from "analog-nest-rpc/h3";
+
+// Import generated controller registry
+// This path may need adjustment based on your project structure
+import { controllers } from "../../../../.analog/nest-controllers";
+
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event);
+  const { controller, action, data } = body;
+
+  const { args } = superjson.parse(data) as { args: unknown[] };
+
+  const ControllerClass = controllers[controller as keyof typeof controllers];
+  if (!ControllerClass) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: `Controller "${controller}" not found`,
+    });
+  }
+
+  const app = getNestApp();
+
+  try {
+    const result = await invokeH3(app, ControllerClass, action, args, event);
+    return superjson.stringify(result);
+  } catch (err) {
+    console.error("[nest-rpc] Error:", err);
+    throw createError({
+      statusCode: 500,
+      statusMessage: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+});

@@ -1,0 +1,30 @@
+// Example controller - copy and modify as needed
+import "reflect-metadata";
+import { Inject, Injectable } from "@nestjs/common";
+import { ServerController, Action } from "analog-nest-rpc";
+
+// Example service (create your own)
+@Injectable()
+export class ExampleService {
+  async getData(id: string) {
+    return { id, message: "Hello from NestJS!" };
+  }
+}
+
+@Injectable()
+@ServerController()
+export class ExampleController {
+  constructor(
+    @Inject(ExampleService) private readonly service: ExampleService,
+  ) {}
+
+  @Action()
+  async getData(id: string) {
+    return this.service.getData(id);
+  }
+
+  @Action()
+  async echo(message: string) {
+    return { echo: message, timestamp: new Date() };
+  }
+}

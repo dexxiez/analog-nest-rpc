@@ -1,0 +1,8 @@
+// Copy this file to: src/server/plugins/bridge.ts
+import { createNestBridge } from "analog-nest-rpc";
+import { AppModule } from "../nest/app.module";
+
+export default createNestBridge(AppModule, {
+  // logger: ["warn", "error"],  // Customize log levels
+  // abortOnError: false,        // Set true for stricter error handling
+});

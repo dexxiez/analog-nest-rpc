@@ -1,0 +1,47 @@
+// Example Vite config integration
+import { defineConfig } from "vite";
+import { resolve } from "path";
+import analog from "@analogjs/platform";
+import { nestRpcPlugin } from "analog-nest-rpc/vite";
+
+export default defineConfig({
+  plugins: [
+    // IMPORTANT: nestRpcPlugin must come BEFORE analog()
+    nestRpcPlugin({
+      // controllersGlob: "src/**/*.controller.ts",   // default
+      // registryPath: ".analog/nest-controllers.ts", // default
+      // tokensPath: ".analog/inject.ts",             // default
+      // debug: true,  // Enable for troubleshooting
+    }),
+    analog({
+      // ... your analog config
+    }),
+  ],
+
+  build: {
+    target: ["es2020"],
+  },
+
+  ssr: {
+    // NestJS packages must be externalized for SSR
+    noExternal: [/@angular/, /@analogjs/],
+    external: ["@nestjs/common", "@nestjs/core", "reflect-metadata"],
+  },
+
+  esbuild: {
+    // CRITICAL: Preserve decorator metadata for NestJS DI
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+      },
+    },
+  },
+
+  resolve: {
+    alias: {
+      // Path alias for generated files (matches tsconfig paths)
+      "#server": resolve(__dirname, ".analog"),
+    },
+  },
+});
