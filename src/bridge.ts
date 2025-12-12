@@ -4,6 +4,7 @@ import "reflect-metadata";
 
 declare global {
   var __NEST_APP_CTX__: INestApplicationContext | undefined;
+  var __NEST_APP_CTX_PROMISE__: Promise<INestApplicationContext> | undefined;
 }
 
 export interface BridgeOptions {
@@ -48,28 +49,58 @@ export const createNestBridge = (
     globalKey = "__NEST_APP_CTX__",
   } = options;
 
+  // Remove trailing underscores before appending _PROMISE__
+  const promiseKey = globalKey.replace(/__$/, "") + "_PROMISE__";
+
   return async (nitroApp: {
     hooks: { hook: (event: string, cb: () => Promise<void>) => void };
   }) => {
-    console.info("[nest-rpc] Bootstrapping NestJS context...");
-
+    // Check if already initialized
     const existing = (globalThis as Record<string, unknown>)[globalKey] as
       | INestApplicationContext
       | undefined;
-    if (!existing) {
+    if (existing) {
+      return;
+    }
+
+    // Check if bootstrap is already in progress (race condition protection)
+    const existingPromise = (globalThis as Record<string, unknown>)[
+      promiseKey
+    ] as Promise<INestApplicationContext> | undefined;
+    if (existingPromise) {
+      await existingPromise;
+      return;
+    }
+
+    console.info("[nest-rpc] Bootstrapping NestJS context...");
+
+    // Create and store the bootstrap promise before awaiting
+    const bootstrapPromise = (async () => {
       const app = await NestFactory.createApplicationContext(AppModule, {
         logger: logger || undefined,
         abortOnError,
       });
 
       await app.init();
+      return app;
+    })();
 
+    (globalThis as Record<string, unknown>)[promiseKey] = bootstrapPromise;
+
+    try {
+      const app = await bootstrapPromise;
       (globalThis as Record<string, unknown>)[globalKey] = app;
 
       nitroApp.hooks.hook("close", async () => {
         console.info("[nest-rpc] Shutting down NestJS context...");
         await app.close();
+        (globalThis as Record<string, unknown>)[globalKey] = undefined;
+        (globalThis as Record<string, unknown>)[promiseKey] = undefined;
       });
+    } catch (err) {
+      // Clear the promise on failure so retry is possible
+      (globalThis as Record<string, unknown>)[promiseKey] = undefined;
+      throw err;
     }
   };
 };

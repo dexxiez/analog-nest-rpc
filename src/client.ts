@@ -1,5 +1,22 @@
 import superjson, { type SuperJSONResult } from "superjson";
 
+/**
+ * Error class that preserves HTTP status code and server error details
+ */
+export class RpcError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number,
+    public readonly statusText: string,
+    public readonly controller: string,
+    public readonly action: string,
+    public readonly serverError?: string,
+  ) {
+    super(message);
+    this.name = "RpcError";
+  }
+}
+
 export interface RpcClientOptions {
   /**
    * RPC endpoint URL for browser requests
@@ -94,8 +111,13 @@ export const createRpcClient = <T extends object = Record<string, unknown>>(
 
         if (!res.ok) {
           const errorText = await res.text();
-          throw new Error(
-            `RPC call to ${controllerName}.${prop} failed: ${res.statusText}\n${errorText}`,
+          throw new RpcError(
+            `RPC call to ${controllerName}.${prop} failed: ${res.statusText}`,
+            res.status,
+            res.statusText,
+            controllerName,
+            prop as string, // Safe: symbols are filtered above
+            errorText,
           );
         }
 

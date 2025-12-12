@@ -65,6 +65,9 @@ export const nestRpcPlugin = (options: NestRpcPluginOptions = {}): Plugin => {
   };
 
   const scanControllers = () => {
+    // Clear existing entries to remove stale controllers (e.g., deleted files)
+    controllerMap.clear();
+
     const controllerFiles = glob.sync(controllersGlob, {
       cwd: projectRoot,
       absolute: true,
@@ -232,6 +235,24 @@ export class ${className} {
         code: ms.toString(),
         map: ms.generateMap({ hires: true }),
       };
+    },
+
+    handleHotUpdate({ file }) {
+      const cleanFile = file.split("?")[0];
+
+      // Early exit for non-controller files
+      if (!filter(cleanFile)) return;
+
+      // Check if a controller file was deleted or renamed
+      if (!fs.existsSync(cleanFile)) {
+        // File was deleted - remove from map and regenerate
+        log(
+          `Controller file deleted: ${path.relative(projectRoot, cleanFile)}`,
+        );
+        controllerMap.delete(cleanFile);
+        generateRegistryFile();
+        generateTokensFile();
+      }
     },
   };
 };

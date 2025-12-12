@@ -7,7 +7,7 @@ export {
 } from "./decorators.js";
 export type { ServerControllerOptions } from "./decorators.js";
 
-export { createRpcClient, configureRpcClient } from "./client.js";
+export { createRpcClient, configureRpcClient, RpcError } from "./client.js";
 export type { RpcClientOptions } from "./client.js";
 
 export { createNestBridge, getNestApp } from "./bridge.js";

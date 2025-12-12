@@ -9,6 +9,7 @@ import { ContextIdFactory, Reflector } from "@nestjs/core";
 import type { H3Event } from "h3";
 import "reflect-metadata";
 
+import { SERVER_ACTION_METADATA } from "../decorators.js";
 import { H3ExecutionContext } from "./execution-context.js";
 
 // NestJS route argument types
@@ -67,7 +68,16 @@ export const invokeNestAction = async (
   // Verify method exists
   const handler = (controller as Record<string, unknown>)[methodName];
   if (typeof handler !== "function") {
-    throw new Error(`Method ${methodName} not found on controller`);
+    throw new Error(`[nest-rpc] Method ${methodName} not found on controller`);
+  }
+
+  // Verify method has @Action() decorator
+  // Note: @Action() sets metadata on the function itself, not the prototype
+  const isAction = Reflect.getMetadata(SERVER_ACTION_METADATA, handler);
+  if (!isAction) {
+    throw new ForbiddenException(
+      `[nest-rpc] Method ${methodName} is not a valid RPC action`,
+    );
   }
 
   // Create execution context for guards and decorators
@@ -131,8 +141,15 @@ const runGuards = async (
     let guard: CanActivate;
     try {
       guard = await app.resolve(GuardClass, contextId, { strict: false });
-    } catch {
-      guard = new (GuardClass as new () => CanActivate)();
+    } catch (err) {
+      // Don't silently instantiate guards without dependencies - this could bypass auth
+      log(
+        `Failed to resolve guard ${GuardClass.name}:`,
+        err instanceof Error ? err.message : err,
+      );
+      throw new ForbiddenException(
+        `Guard ${GuardClass.name} could not be resolved`,
+      );
     }
 
     const canActivate = await guard.canActivate(context);
