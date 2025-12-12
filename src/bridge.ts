@@ -109,7 +109,7 @@ export const createNestBridge = (
  * Gets the NestJS application context from the global store.
  * Throws if not initialized.
  */
-export const getNestApp = (
+export const getNestInstance = (
   globalKey = "__NEST_APP_CTX__",
 ): INestApplicationContext => {
   const app = (globalThis as Record<string, unknown>)[globalKey] as

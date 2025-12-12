@@ -61,7 +61,7 @@ export default createNestBridge(AppModule);
 // src/server/routes/api/_nest_rpc.post.ts
 import { createError, defineEventHandler, readBody } from "h3";
 import superjson from "superjson";
-import { getNestApp } from "analog-nest-rpc";
+import { getNestInstance } from "analog-nest-rpc";
 import { invokeNestAction } from "analog-nest-rpc/h3";
 import { controllers } from "../../../../.analog/nest-controllers";
 
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Controller not found" });
   }
 
-  const result = await invokeNestAction(getNestApp(), ControllerClass, action, args, event);
+  const result = await invokeNestAction(getNestInstance(), ControllerClass, action, args, event);
   return superjson.stringify(result);
 });
 ```
@@ -208,7 +208,7 @@ const client = createRpcClient<MyController>("MyController");
 ### Bridge
 
 ```typescript
-import { createNestBridge, getNestApp } from "analog-nest-rpc";
+import { createNestBridge, getNestInstance} from "analog-nest-rpc";
 
 // Create Nitro plugin
 export default createNestBridge(AppModule, {
@@ -217,7 +217,7 @@ export default createNestBridge(AppModule, {
 });
 
 // Get app context anywhere
-const app = getNestApp();
+const app = getNestInstance();
 ```
 
 ### H3 Integration

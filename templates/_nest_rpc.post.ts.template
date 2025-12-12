@@ -1,7 +1,7 @@
 // Copy this file to: src/server/routes/api/_nest_rpc.post.ts
 import { createError, defineEventHandler, readBody } from "h3";
 import superjson from "superjson";
-import { getNestApp, invokeNestAction } from "analog-nest-rpc";
+import { getNestInstance, invokeNestAction } from "analog-nest-rpc";
 import { invokeNestAction as invokeH3 } from "analog-nest-rpc/h3";
 
 // Import generated controller registry
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const app = getNestApp();
+  const app = getNestInstance();
 
   try {
     const result = await invokeH3(app, ControllerClass, action, args, event);

@@ -49,7 +49,7 @@ The library consists of five main subsystems that work together to enable seamle
 ### 4. NestJS Bridge (src/bridge.ts)
 - `createNestBridge()`: Returns a Nitro plugin that bootstraps NestJS ApplicationContext
 - Stores app context in `globalThis.__NEST_APP_CTX__` for request handlers
-- `getNestApp()`: Retrieves the global app context (throws if not initialized)
+- `getNestInstance()`: Retrieves the global app context (throws if not initialized)
 - Registers shutdown hook to close NestJS app cleanly
 
 ### 5. H3 Integration (src/h3/)

@@ -1,6 +1,6 @@
 {
   "name": "analog-nest-rpc",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "POC Compiler-driven RPC bridge between AnalogJS and NestJS",
   "type": "module",
   "main": "./dist/index.js",
