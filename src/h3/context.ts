@@ -39,14 +39,14 @@ export interface InvokeOptions {
  * Invokes a NestJS controller action within the H3 request context.
  * Handles DI resolution, guards, and param decorators.
  */
-export async function invokeNestAction(
+export const invokeNestAction = async (
   app: INestApplicationContext,
   ControllerClass: Type<unknown>,
   methodName: string,
   args: unknown[],
   event: H3Event,
   options: InvokeOptions = {},
-): Promise<unknown> {
+): Promise<unknown> => {
   const { debug = false } = options;
   const log = (...logArgs: unknown[]) => {
     if (debug) console.log("[nest-rpc]", ...logArgs);
@@ -99,16 +99,16 @@ export async function invokeNestAction(
   // Invoke the action
   log("Invoking method:", methodName);
   return (controller as Record<string, Function>)[methodName](...resolvedArgs);
-}
+};
 
-async function runGuards(
+const runGuards = async (
   app: INestApplicationContext,
   controllerClass: Type<unknown>,
   methodName: string,
   context: H3ExecutionContext,
   contextId: { id: number },
   log: (...args: unknown[]) => void,
-): Promise<void> {
+): Promise<void> => {
   const reflector = app.get(Reflector);
 
   // Get guards from class and method metadata
@@ -140,14 +140,14 @@ async function runGuards(
       throw new ForbiddenException("Access denied by guard");
     }
   }
-}
+};
 
-function resolveParamDecorators(
+const resolveParamDecorators = (
   controllerClass: Type<unknown>,
   methodName: string,
   context: H3ExecutionContext,
   rpcArgs: unknown[],
-): unknown[] {
+): unknown[] => {
   const metadata: Record<
     string,
     { index: number; data?: unknown; factory?: Function }
@@ -206,4 +206,4 @@ function resolveParamDecorators(
   }
 
   return resolvedArgs;
-}
+};

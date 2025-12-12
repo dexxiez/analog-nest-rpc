@@ -20,9 +20,9 @@ export interface ServerControllerOptions {
  * Marks a class as a server-side controller accessible via RPC.
  * Automatically applies @Injectable() with REQUEST scope.
  */
-export function ServerController(
+export const ServerController = (
   pathOrOptions?: string | ServerControllerOptions,
-): ClassDecorator {
+): ClassDecorator => {
   return (target: Function) => {
     const options =
       typeof pathOrOptions === "string"
@@ -36,12 +36,12 @@ export function ServerController(
     const alias = options.alias || target.name;
     SetMetadata(SERVER_CONTROLLER_KEY, alias)(target);
   };
-}
+};
 
 /**
  * Marks a method as an RPC action that can be called from the client.
  */
-export function Action(): MethodDecorator {
+export const Action = (): MethodDecorator => {
   return (
     _target: object,
     _propertyKey: string | symbol,
@@ -52,4 +52,4 @@ export function Action(): MethodDecorator {
     }
     return descriptor;
   };
-}
+};

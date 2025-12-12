@@ -38,10 +38,10 @@ export interface BridgeOptions {
  * export default createNestBridge(AppModule);
  * ```
  */
-export function createNestBridge(
+export const createNestBridge = (
   AppModule: Type<unknown>,
   options: BridgeOptions = {},
-) {
+) => {
   const {
     logger = ["warn", "error"],
     abortOnError = false,
@@ -72,15 +72,15 @@ export function createNestBridge(
       });
     }
   };
-}
+};
 
 /**
  * Gets the NestJS application context from the global store.
  * Throws if not initialized.
  */
-export function getNestApp(
+export const getNestApp = (
   globalKey = "__NEST_APP_CTX__",
-): INestApplicationContext {
+): INestApplicationContext => {
   const app = (globalThis as Record<string, unknown>)[globalKey] as
     | INestApplicationContext
     | undefined;
@@ -91,4 +91,4 @@ export function getNestApp(
     );
   }
   return app;
-}
+};

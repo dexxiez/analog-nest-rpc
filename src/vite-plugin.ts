@@ -46,7 +46,7 @@ export interface NestRpcPluginOptions {
   debug?: boolean;
 }
 
-export function nestRpcPlugin(options: NestRpcPluginOptions = {}): Plugin {
+export const nestRpcPlugin = (options: NestRpcPluginOptions = {}): Plugin => {
   const {
     controllersGlob = "src/**/*.controller.ts",
     registryPath = ".analog/nest-controllers.ts",
@@ -64,7 +64,7 @@ export function nestRpcPlugin(options: NestRpcPluginOptions = {}): Plugin {
     if (debug) console.log("[nest-rpc]", ...args);
   };
 
-  function scanControllers() {
+  const scanControllers = () => {
     const controllerFiles = glob.sync(controllersGlob, {
       cwd: projectRoot,
       absolute: true,
@@ -82,9 +82,9 @@ export function nestRpcPlugin(options: NestRpcPluginOptions = {}): Plugin {
         );
       }
     }
-  }
+  };
 
-  function generateRegistryFile() {
+  const generateRegistryFile = () => {
     const fullRegistryPath = path.join(projectRoot, registryPath);
 
     const imports = Array.from(controllerMap.entries())
@@ -117,9 +117,9 @@ export const controllers: Record<string, any> = {
 
     fs.writeFileSync(fullRegistryPath, content, "utf-8");
     log(`Generated registry at ${registryPath}`);
-  }
+  };
 
-  function generateTokensFile() {
+  const generateTokensFile = () => {
     if (tokensPath === false) return;
 
     const fullTokensPath = path.join(projectRoot, tokensPath);
@@ -165,7 +165,7 @@ ${tokenExports}
 
     fs.writeFileSync(fullTokensPath, content, "utf-8");
     log(`Generated injection tokens at ${tokensPath}`);
-  }
+  };
 
   return {
     name: "vite-plugin-nest-rpc",
@@ -234,6 +234,6 @@ export class ${className} {
       };
     },
   };
-}
+};
 
 export default nestRpcPlugin;

@@ -30,9 +30,9 @@ let globalOptions: RpcClientOptions = {};
 /**
  * Configure global RPC client options
  */
-export function configureRpcClient(options: RpcClientOptions): void {
+export const configureRpcClient = (options: RpcClientOptions): void => {
   globalOptions = { ...globalOptions, ...options };
-}
+};
 
 // Properties to ignore on the proxy
 const IGNORED_PROPS = new Set([
@@ -55,10 +55,10 @@ const IGNORED_PROPS = new Set([
 /**
  * Creates an RPC client proxy for a NestJS controller
  */
-export function createRpcClient<T extends object = Record<string, unknown>>(
+export const createRpcClient = <T extends object = Record<string, unknown>>(
   controllerName: string,
   options: RpcClientOptions = {},
-): T {
+): T => {
   const mergedOptions = { ...globalOptions, ...options };
   const {
     endpoint = "/api/_nest_rpc",
@@ -104,6 +104,6 @@ export function createRpcClient<T extends object = Record<string, unknown>>(
       };
     },
   });
-}
+};
 
 export default createRpcClient;
